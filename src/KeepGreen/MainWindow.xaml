@@ -1,0 +1,642 @@
+<ui:FluentWindow
+    x:Class="KeepGreen.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    Title="KeepGreen"
+    Width="1080"
+    Height="760"
+    MinWidth="900"
+    MinHeight="620"
+    ExtendsContentIntoTitleBar="True"
+    Icon="pack://application:,,,/Assets/logo.png"
+    WindowBackdropType="Mica"
+    WindowCornerPreference="Round"
+    WindowStartupLocation="CenterScreen">
+
+    <ui:FluentWindow.Resources>
+        <Style x:Key="Card" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Padding" Value="20" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+        <Style x:Key="PageTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="28" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,8,0,4" />
+        </Style>
+        <Style x:Key="PageIntro" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,0,0,20" />
+        </Style>
+        <Style x:Key="SectionTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,12,0,8" />
+        </Style>
+        <Style x:Key="Secondary" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style x:Key="RowTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style x:Key="StatValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="26" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="0,6,0,2" />
+        </Style>
+    </ui:FluentWindow.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!--  The sidebar shows the name, so the title bar only carries the window buttons.  -->
+        <ui:TitleBar Grid.Row="0" />
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!--  Sidebar  -->
+            <DockPanel Grid.Column="0" Margin="12,0,8,16">
+                <StackPanel Margin="8,4,0,24" DockPanel.Dock="Top" Orientation="Horizontal">
+                    <Image Width="40" Height="40" Source="pack://application:,,,/Assets/logo.png" />
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock FontSize="18" FontWeight="SemiBold" Text="KeepGreen" />
+                        <TextBlock Style="{StaticResource Secondary}" Text="Stay available, automatically" />
+                    </StackPanel>
+                </StackPanel>
+
+                <Border Margin="0" Padding="14" DockPanel.Dock="Bottom" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="10" Height="10" VerticalAlignment="Center" Fill="{Binding Engine.State, Converter={StaticResource StateToBrush}}" />
+                            <TextBlock Margin="8,0,0,0" FontWeight="SemiBold" Text="{Binding Engine.ShortStatus}" />
+                        </StackPanel>
+                        <TextBlock Margin="18,4,0,0" Style="{StaticResource Secondary}" Text="Ctrl + Alt + G to toggle" />
+                    </StackPanel>
+                </Border>
+
+                <ListBox x:Name="Nav" Background="Transparent" BorderThickness="0" SelectionChanged="Nav_SelectionChanged">
+                    <ListBoxItem IsSelected="True">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Home24" />
+                            <TextBlock Margin="12,0,0,0" Text="Dashboard" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="CalendarLtr24" />
+                            <TextBlock Margin="12,0,0,0" Text="Schedule" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Options24" />
+                            <TextBlock Margin="12,0,0,0" Text="Behavior" />
+                        </StackPanel>
+                    </ListBoxItem>
+                    <ListBoxItem>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Settings24" />
+                            <TextBlock Margin="12,0,0,0" Text="Settings" />
+                        </StackPanel>
+                    </ListBoxItem>
+                </ListBox>
+            </DockPanel>
+
+            <!--  Pages  -->
+            <Grid Grid.Column="1">
+
+                <!--  Dashboard  -->
+                <ScrollViewer x:Name="DashboardPage" Padding="8,0,24,16" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PageTitle}" Text="Dashboard" />
+                        <TextBlock Style="{StaticResource PageIntro}" Text="KeepGreen keeps your PC awake and your Teams, Slack and Zoom status available. It only steps in when you've been idle." />
+
+                        <ui:InfoBar
+                            Title="Heads up"
+                            Margin="0,0,0,12"
+                            IsClosable="False"
+                            IsOpen="{Binding Engine.HasWarning, Mode=OneWay}"
+                            Message="{Binding Engine.Warning}"
+                            Severity="Warning" />
+                        <ui:InfoBar
+                            x:Name="TestResultBar"
+                            Title="Self-test"
+                            Margin="0,0,0,12"
+                            IsClosable="True"
+                            IsOpen="False" />
+
+                        <!--  Hero  -->
+                        <Border Padding="28" Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid Grid.Column="0" Width="112" Height="112">
+                                    <Ellipse
+                                        Fill="{Binding Engine.State, Converter={StaticResource StateToBrush}}"
+                                        Opacity="0.35"
+                                        RenderTransformOrigin="0.5,0.5"
+                                        Visibility="{Binding Engine.IsActive, Converter={StaticResource BoolToVisibility}}">
+                                        <Ellipse.RenderTransform>
+                                            <ScaleTransform />
+                                        </Ellipse.RenderTransform>
+                                        <Ellipse.Triggers>
+                                            <EventTrigger RoutedEvent="Loaded">
+                                                <BeginStoryboard>
+                                                    <Storyboard RepeatBehavior="Forever">
+                                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="0.55" To="1" Duration="0:0:2" />
+                                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="0.55" To="1" Duration="0:0:2" />
+                                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="0.5" To="0" Duration="0:0:2" />
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </EventTrigger>
+                                        </Ellipse.Triggers>
+                                    </Ellipse>
+                                    <Ellipse Width="64" Height="64" Fill="{Binding Engine.State, Converter={StaticResource StateToBrush}}" />
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="30"
+                                        Foreground="White"
+                                        Symbol="Checkmark24"
+                                        Visibility="{Binding Engine.IsActive, Converter={StaticResource BoolToVisibility}}" />
+                                    <ui:SymbolIcon
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        FontSize="30"
+                                        Foreground="White"
+                                        Symbol="Pause24"
+                                        Visibility="{Binding Engine.IsActive, Converter={StaticResource InverseBoolToVisibility}}" />
+                                </Grid>
+
+                                <StackPanel Grid.Column="1" Margin="24,0,16,0" VerticalAlignment="Center">
+                                    <TextBlock FontSize="26" FontWeight="SemiBold" Text="{Binding Engine.Headline}" TextWrapping="Wrap" />
+                                    <TextBlock Margin="0,6,0,0" FontSize="14" Foreground="{DynamicResource TextFillColorSecondaryBrush}" Text="{Binding Engine.Detail}" TextWrapping="Wrap" />
+                                    <Border
+                                        Margin="0,12,0,0"
+                                        Padding="10,4"
+                                        HorizontalAlignment="Left"
+                                        Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                        BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Visibility="{Binding Engine.HasBoost, Converter={StaticResource BoolToVisibility}}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <ui:SymbolIcon FontSize="14" Symbol="Flash24" />
+                                            <TextBlock Margin="6,0,0,0" FontSize="12" Text="{Binding Engine.BoostText}" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                                    <TextBlock HorizontalAlignment="Right" Style="{StaticResource Secondary}" Text="KeepGreen" />
+                                    <ui:ToggleSwitch Margin="0,6,0,0" HorizontalAlignment="Right" IsChecked="{Binding Settings.IsEnabled}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <!--  Stats  -->
+                        <UniformGrid Margin="0,0,-12,0" Columns="4">
+                            <Border Margin="0,0,12,12" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Secondary}" Text="IDLE RIGHT NOW" />
+                                    <TextBlock Style="{StaticResource StatValue}" Text="{Binding Engine.IdleText}" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Windows idle timer" />
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="0,0,12,12" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Secondary}" Text="NEXT NUDGE" />
+                                    <TextBlock Style="{StaticResource StatValue}" Text="{Binding Engine.NextNudgeText}" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Only if you stay idle" />
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="0,0,12,12" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Secondary}" Text="NUDGES TODAY" />
+                                    <TextBlock Style="{StaticResource StatValue}" Text="{Binding Engine.NudgesTodayText}" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="{Binding Engine.LastNudgeText}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Margin="0,0,12,12" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource Secondary}" Text="GREEN TODAY" />
+                                    <TextBlock Style="{StaticResource StatValue}" Text="{Binding Engine.GreenTimeText}" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Time KeepGreen was active" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!--  Quick boost  -->
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon FontSize="20" Symbol="Flash24" />
+                                    <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource RowTitle}" Text="Quick boost" />
+                                </StackPanel>
+                                <TextBlock Margin="0,4,0,12" Style="{StaticResource Secondary}" Text="Stay green for a while, even outside your schedule or with the switch off." />
+                                <WrapPanel>
+                                    <ui:Button Margin="0,0,8,8" Click="Boost_Click" Content="15 min" Tag="15" />
+                                    <ui:Button Margin="0,0,8,8" Click="Boost_Click" Content="30 min" Tag="30" />
+                                    <ui:Button Margin="0,0,8,8" Click="Boost_Click" Content="1 hour" Tag="60" />
+                                    <ui:Button Margin="0,0,8,8" Click="Boost_Click" Content="2 hours" Tag="120" />
+                                    <ui:Button Margin="0,0,8,8" Click="Boost_Click" Content="Until the end of my workday" Tag="eod" />
+                                    <ui:Button
+                                        Margin="0,0,8,8"
+                                        Appearance="Danger"
+                                        Click="CancelBoost_Click"
+                                        Content="Cancel boost"
+                                        Visibility="{Binding Engine.HasBoost, Converter={StaticResource BoolToVisibility}}" />
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
+
+                        <!--  Self-test  -->
+                        <Border Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0" VerticalAlignment="Center" FontSize="20" Symbol="Beaker24" />
+                                <StackPanel Grid.Column="1" Margin="12,0">
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Test it on this PC" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Sends one nudge and checks that Windows really registered activity." />
+                                </StackPanel>
+                                <ui:Button Grid.Column="2" Appearance="Primary" Click="SelfTest_Click" Content="Run test" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!--  Schedule  -->
+                <ScrollViewer x:Name="SchedulePage" Padding="8,0,24,16" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PageTitle}" Text="Schedule" />
+                        <TextBlock Style="{StaticResource PageIntro}" Text="{Binding Engine.ScheduleSummary}" />
+
+                        <ui:CardControl Margin="0,0,0,12" Icon="{ui:SymbolIcon CalendarClock24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Follow my work schedule" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Turns on during your work hours and off outside them, all by itself." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:ToggleSwitch IsChecked="{Binding Settings.UseSchedule}" />
+                        </ui:CardControl>
+
+                        <Border IsEnabled="{Binding Settings.UseSchedule}" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Grid>
+                                    <TextBlock VerticalAlignment="Center" Style="{StaticResource RowTitle}" Text="Working days and hours" />
+                                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                                        <ui:Button Margin="0,0,8,0" Click="Preset_Click" Content="Mon–Fri 9–17" Tag="weekdays-9-17" />
+                                        <ui:Button Margin="0,0,8,0" Click="Preset_Click" Content="Mon–Fri 8–18" Tag="weekdays-8-18" />
+                                        <ui:Button Click="Preset_Click" Content="Every day 8–20" Tag="everyday" />
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Margin="0,4,0,12" Style="{StaticResource Secondary}" Text="An end time before the start time runs past midnight, for night shifts." />
+
+                                <ItemsControl ItemsSource="{Binding Settings.Week}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,4">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="150" />
+                                                    <ColumnDefinition Width="120" />
+                                                    <ColumnDefinition Width="44" />
+                                                    <ColumnDefinition Width="120" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <CheckBox Grid.Column="0" VerticalAlignment="Center" Content="{Binding DayName}" IsChecked="{Binding Enabled}" />
+                                                <ComboBox
+                                                    Grid.Column="1"
+                                                    IsEnabled="{Binding Enabled}"
+                                                    ItemStringFormat="HH:mm"
+                                                    ItemsSource="{Binding DataContext.TimeChoices, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    SelectedItem="{Binding Start}" />
+                                                <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{StaticResource Secondary}" Text="to" />
+                                                <ComboBox
+                                                    Grid.Column="3"
+                                                    IsEnabled="{Binding Enabled}"
+                                                    ItemStringFormat="HH:mm"
+                                                    ItemsSource="{Binding DataContext.TimeChoices, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                    SelectedItem="{Binding End}" />
+                                                <TextBlock Grid.Column="4" Margin="16,0,0,0" VerticalAlignment="Center" Style="{StaticResource Secondary}" Text="{Binding LengthText}" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border IsEnabled="{Binding Settings.UseSchedule}" Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <ui:SymbolIcon Grid.Column="0" VerticalAlignment="Center" FontSize="20" Symbol="Food24" />
+                                <StackPanel Grid.Column="1" Margin="12,0">
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Lunch break" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Let your status go Away while you eat. Applies on every working day." />
+                                </StackPanel>
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" Orientation="Horizontal">
+                                    <ComboBox
+                                        Width="110"
+                                        IsEnabled="{Binding Settings.LunchBreakEnabled}"
+                                        ItemStringFormat="HH:mm"
+                                        ItemsSource="{Binding TimeChoices}"
+                                        SelectedItem="{Binding Settings.LunchStart}" />
+                                    <TextBlock Margin="10,0" VerticalAlignment="Center" Style="{StaticResource Secondary}" Text="to" />
+                                    <ComboBox
+                                        Width="110"
+                                        IsEnabled="{Binding Settings.LunchBreakEnabled}"
+                                        ItemStringFormat="HH:mm"
+                                        ItemsSource="{Binding TimeChoices}"
+                                        SelectedItem="{Binding Settings.LunchEnd}" />
+                                    <ui:ToggleSwitch Margin="16,0,0,0" IsChecked="{Binding Settings.LunchBreakEnabled}" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+
+                        <Border IsEnabled="{Binding Settings.UseSchedule}" Style="{StaticResource Card}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon FontSize="20" Symbol="CalendarCancel24" />
+                                    <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource RowTitle}" Text="Days off" />
+                                </StackPanel>
+                                <TextBlock Margin="0,4,0,12" Style="{StaticResource Secondary}" Text="Holidays and vacation days stay off, even on a working day. Past days clean themselves up." />
+                                <StackPanel Margin="0,0,0,12" Orientation="Horizontal">
+                                    <DatePicker x:Name="DayOffPicker" Width="220" />
+                                    <ui:Button Margin="8,0,0,0" Appearance="Primary" Click="AddDayOff_Click" Content="Add day off" />
+                                </StackPanel>
+                                <TextBlock Style="{StaticResource Secondary}" Text="No days off planned." Visibility="{Binding Settings.DaysOff.Count, Converter={StaticResource ZeroToVisible}}" />
+                                <ItemsControl ItemsSource="{Binding Settings.DaysOff}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border
+                                                Margin="0,0,8,8"
+                                                Padding="12,2,2,2"
+                                                Background="{DynamicResource ControlFillColorDefaultBrush}"
+                                                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="16">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock VerticalAlignment="Center" Text="{Binding StringFormat={}{0:ddd, d MMM yyyy}}" />
+                                                    <ui:Button
+                                                        Margin="4,0,0,0"
+                                                        Padding="6"
+                                                        Appearance="Transparent"
+                                                        Click="RemoveDayOff_Click"
+                                                        Icon="{ui:SymbolIcon Dismiss16}"
+                                                        Tag="{Binding}"
+                                                        ToolTip="Remove" />
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!--  Behavior  -->
+                <ScrollViewer x:Name="BehaviorPage" Padding="8,0,24,16" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PageTitle}" Text="Behavior" />
+                        <TextBlock Style="{StaticResource PageIntro}" Text="Teams shows you as Away after about 5 minutes without input. KeepGreen steps in well before that, and only when you're idle, so it never gets in your way." />
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Grid>
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource RowTitle}" Text="Nudge after I've been idle for" />
+                                        <TextBlock Style="{StaticResource Secondary}" Text="Shorter is safer; anything up to 4 minutes keeps Teams green." />
+                                    </StackPanel>
+                                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="20" FontWeight="SemiBold" Text="{Binding Settings.IntervalSeconds, StringFormat={}{0} s}" />
+                                </Grid>
+                                <Slider
+                                    Margin="0,12,0,0"
+                                    IsSnapToTickEnabled="True"
+                                    Maximum="240"
+                                    Minimum="15"
+                                    TickFrequency="5"
+                                    Value="{Binding Settings.IntervalSeconds}" />
+                                <CheckBox Margin="0,12,0,0" Content="Vary the timing slightly (±20%) so it's never robotic" IsChecked="{Binding Settings.RandomizeInterval}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Style="{StaticResource RowTitle}" Text="How to nudge" />
+                                <TextBlock Margin="0,4,0,8" Style="{StaticResource Secondary}" Text="Every style resets the Windows idle timer that Teams, Slack and Zoom watch." />
+                                <RadioButton Margin="0,6" GroupName="NudgeStyle" IsChecked="{Binding Settings.Style, Converter={StaticResource EnumToBool}, ConverterParameter=Invisible}">
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="Invisible (recommended)" />
+                                        <TextBlock Style="{StaticResource Secondary}" Text="A zero-distance mouse signal. Your cursor never moves." />
+                                    </StackPanel>
+                                </RadioButton>
+                                <RadioButton Margin="0,6" GroupName="NudgeStyle" IsChecked="{Binding Settings.Style, Converter={StaticResource EnumToBool}, ConverterParameter=MicroMove}">
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="Micro-move" />
+                                        <TextBlock Style="{StaticResource Secondary}" Text="Moves the cursor one pixel and straight back." />
+                                    </StackPanel>
+                                </RadioButton>
+                                <RadioButton Margin="0,6" GroupName="NudgeStyle" IsChecked="{Binding Settings.Style, Converter={StaticResource EnumToBool}, ConverterParameter=PhantomKey}">
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="Phantom key" />
+                                        <TextBlock Style="{StaticResource Secondary}" Text="Taps F15, a key that no real keyboard has, so no app reacts to it." />
+                                    </StackPanel>
+                                </RadioButton>
+                                <RadioButton Margin="0,6" GroupName="NudgeStyle" IsChecked="{Binding Settings.Style, Converter={StaticResource EnumToBool}, ConverterParameter=AwakeOnly}">
+                                    <StackPanel>
+                                        <TextBlock FontWeight="SemiBold" Text="Awake only" />
+                                        <TextBlock Style="{StaticResource Secondary}" Text="No input at all. Keeps the PC and screen awake, but your status can still go Away." />
+                                    </StackPanel>
+                                </RadioButton>
+                            </StackPanel>
+                        </Border>
+
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Smart pauses" />
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon LockClosed24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Pause when the PC is locked" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Locking up means you've stepped away, so your status should show it." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:ToggleSwitch IsChecked="{Binding Settings.PauseWhenLocked}" />
+                        </ui:CardControl>
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon PlugDisconnected24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Pause on battery power" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Only work while the laptop is plugged in." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:ToggleSwitch IsChecked="{Binding Settings.PauseOnBattery}" />
+                        </ui:CardControl>
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon BatteryWarning24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Pause when the battery is low" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Lets an unplugged laptop sleep before it runs flat." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Margin="0,0,8,0" VerticalAlignment="Center" Style="{StaticResource Secondary}" Text="Below" />
+                                <ComboBox
+                                    Width="96"
+                                    IsEnabled="{Binding Settings.PauseOnLowBattery}"
+                                    ItemStringFormat="{}{0} %"
+                                    ItemsSource="{Binding BatteryChoices}"
+                                    SelectedItem="{Binding Settings.LowBatteryPercent}" />
+                                <ui:ToggleSwitch Margin="16,0,0,0" IsChecked="{Binding Settings.PauseOnLowBattery}" />
+                            </StackPanel>
+                        </ui:CardControl>
+
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <ui:SymbolIcon Grid.Column="0" VerticalAlignment="Center" FontSize="20" Symbol="AppsList24" />
+                                    <StackPanel Grid.Column="1" Margin="12,0">
+                                        <TextBlock Style="{StaticResource RowTitle}" Text="Only while my chat apps are running" />
+                                        <TextBlock Style="{StaticResource Secondary}" Text="Process names, separated by commas. New Teams is ms-teams." />
+                                    </StackPanel>
+                                    <ui:ToggleSwitch Grid.Column="2" IsChecked="{Binding Settings.OnlyWhenAppsRunning}" />
+                                </Grid>
+                                <ui:TextBox
+                                    Margin="0,12,0,0"
+                                    IsEnabled="{Binding Settings.OnlyWhenAppsRunning}"
+                                    PlaceholderText="ms-teams, slack, Zoom"
+                                    Text="{Binding Settings.WatchedApps, UpdateSourceTrigger=LostFocus}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!--  Settings  -->
+                <ScrollViewer x:Name="SettingsPage" Padding="8,0,24,16" VerticalScrollBarVisibility="Auto" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource PageTitle}" Text="Settings" />
+                        <TextBlock Style="{StaticResource PageIntro}" Text="Settings save automatically." />
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon Power24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Start with Windows" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Launch KeepGreen when you sign in. No admin rights needed." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:ToggleSwitch IsChecked="{Binding Settings.StartWithWindows}" />
+                        </ui:CardControl>
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon EyeOff24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Start hidden in the tray" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="When it starts with Windows, skip the window and go straight to work." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:ToggleSwitch IsChecked="{Binding Settings.StartInTray}" />
+                        </ui:CardControl>
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon Alert24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Notifications" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="A quick note when work hours start or end, or a boost runs out." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:ToggleSwitch IsChecked="{Binding Settings.Notifications}" />
+                        </ui:CardControl>
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon Keyboard24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Global shortcut: Ctrl + Alt + G" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="{Binding HotkeyStatus}" />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:ToggleSwitch IsChecked="{Binding Settings.HotkeyEnabled}" />
+                        </ui:CardControl>
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon PaintBrush24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Theme" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="Follow Windows, or pick light or dark." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ComboBox Width="140" ItemsSource="{Binding Themes}" SelectedItem="{Binding Settings.Theme}" />
+                        </ui:CardControl>
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon Folder24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Settings folder" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="{Binding FolderDisplay}" />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:Button Click="OpenDataFolder_Click" Content="Open" />
+                        </ui:CardControl>
+
+                        <Border Margin="0,12,0,12" Style="{StaticResource Card}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Image Grid.Column="0" Width="56" Height="56" VerticalAlignment="Top" Source="pack://application:,,,/Assets/logo.png" />
+                                <StackPanel Grid.Column="1" Margin="16,0">
+                                    <TextBlock FontSize="18" FontWeight="SemiBold" Text="KeepGreen" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="{Binding Version}" />
+                                    <TextBlock Margin="0,8,0,0" Text="Made by Mahdhi Muzammil. Free and open source under the MIT license." TextWrapping="Wrap" />
+                                    <TextBlock Margin="0,8,0,0" Style="{StaticResource Secondary}" Text="Use KeepGreen responsibly and within your organization's policies. It changes how idle your PC looks, not how much you work." />
+                                </StackPanel>
+                                <ui:Button Grid.Column="2" VerticalAlignment="Top" Click="OpenRepo_Click" Content="GitHub" Icon="{ui:SymbolIcon Star24}" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
+</ui:FluentWindow>

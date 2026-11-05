@@ -1,0 +1,22 @@
+<Application
+    x:Class="KeepGreen.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:KeepGreen"
+    xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+    ShutdownMode="OnExplicitShutdown">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ui:ThemesDictionary Theme="Dark" />
+                <ui:ControlsDictionary />
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BoolToVisibility" />
+            <local:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibility" />
+            <local:StateToBrushConverter x:Key="StateToBrush" />
+            <local:EnumToBoolConverter x:Key="EnumToBool" />
+            <local:ZeroToVisibleConverter x:Key="ZeroToVisible" />
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

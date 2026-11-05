@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <Authors>Mahdhi Muzammil</Authors>
+    <Company>Mahdhi Muzammil</Company>
+    <Product>KeepGreen</Product>
+    <Copyright>Copyright © 2026 Mahdhi Muzammil</Copyright>
+    <RepositoryUrl>https://github.com/m4hdhi/KeepGreen</RepositoryUrl>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+</Project>

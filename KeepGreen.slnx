@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KeepGreen.Core/KeepGreen.Core.csproj" />
+    <Project Path="src/KeepGreen/KeepGreen.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KeepGreen.Tests/KeepGreen.Tests.csproj" />
+  </Folder>
+</Solution>

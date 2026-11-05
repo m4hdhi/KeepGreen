@@ -1,0 +1,37 @@
+name: Release
+
+# Publishing a GitHub release builds both downloads and attaches them to it.
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Test
+        run: dotnet run --project tests/KeepGreen.Tests -c Release
+
+      - name: Publish
+        shell: pwsh
+        run: |
+          $version = '${{ github.event.release.tag_name }}'.TrimStart('v')
+          $common = @('src/KeepGreen/KeepGreen.csproj', '-c', 'Release', '-r', 'win-x64', '-p:PublishSingleFile=true', '-p:DebugType=none', "-p:Version=$version")
+          dotnet publish @common --self-contained false -o out/portable
+          dotnet publish @common --self-contained true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o out/standalone
+          Copy-Item out/portable/KeepGreen.exe KeepGreen-win-x64.exe
+          Copy-Item out/standalone/KeepGreen.exe KeepGreen-win-x64-standalone.exe
+
+      - name: Upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" KeepGreen-win-x64.exe KeepGreen-win-x64-standalone.exe --clobber
