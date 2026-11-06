@@ -18,6 +18,8 @@ internal readonly record struct PresenceTransition(PresenceDecision Previous, Pr
 /// </summary>
 internal sealed class PresenceEngine : ObservableObject, IDisposable
 {
+    public static readonly TimeSpan SelfTestQuietTime = TimeSpan.FromSeconds(3);
+
     private static readonly TimeSpan AppScanInterval = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan StatsSaveInterval = TimeSpan.FromMinutes(1);
 
@@ -66,6 +68,19 @@ internal sealed class PresenceEngine : ObservableObject, IDisposable
     public bool IsActive => _decision.IsActive;
 
     public bool HasBoost => _boostUntil is not null;
+
+    /// <summary>True while a boost is keeping KeepGreen on, even if a smart pause holds it right now.</summary>
+    public bool IsBoosted => _decision.IsBoosted;
+
+    /// <summary>When the current boost ends, or null without one.</summary>
+    public DateTime? BoostUntil => _boostUntil;
+
+    /// <summary>The Windows idle timer at the last tick.</summary>
+    public int IdleSeconds => (int)_idle.TotalSeconds;
+
+    public int NudgesToday => _stats.Nudges;
+
+    public int GreenSecondsToday => (int)_stats.ActiveSeconds;
 
     public string Headline { get; private set; } = "Starting…";
 
@@ -125,9 +140,14 @@ internal sealed class PresenceEngine : ObservableObject, IDisposable
 
     public void CancelBoost() => SetBoost(null);
 
-    /// <summary>Sends one nudge right away and checks that Windows registered it.</summary>
+    /// <summary>Waits for the user to go hands-off, sends one nudge and checks that Windows registered it.</summary>
     public async Task<(bool Ok, string Message)> RunSelfTestAsync()
     {
+        // Clicking "Run test" resets the idle timer by itself, so only a nudge after a quiet spell proves anything.
+        await Task.Delay(SelfTestQuietTime);
+        if (NativeMethods.GetIdleTime() < SelfTestQuietTime - TimeSpan.FromSeconds(0.5))
+            return (false, "You used the mouse or keyboard during the test. Run it again and keep your hands off for 3 seconds.");
+
         var style = _settings.Style == NudgeStyle.AwakeOnly ? NudgeStyle.Invisible : _settings.Style;
         if (!InputNudger.Send(style))
             return (false, "Windows refused the input. If an app running as administrator is in front, switch to another window and try again.");

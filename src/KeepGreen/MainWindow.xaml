@@ -617,6 +617,104 @@
                             <ui:Button Click="OpenDataFolder_Click" Content="Open" />
                         </ui:CardControl>
 
+                        <!--  Phone remote  -->
+                        <TextBlock Style="{StaticResource SectionTitle}" Text="Phone remote" />
+
+                        <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon Phone24}">
+                            <ui:CardControl.Header>
+                                <StackPanel>
+                                    <TextBlock Style="{StaticResource RowTitle}" Text="Control KeepGreen from your phone" />
+                                    <TextBlock Style="{StaticResource Secondary}" Text="See your status, flip the switch or start a boost from the KeepGreen app. Your phone needs to be on the same Wi-Fi as this PC." />
+                                </StackPanel>
+                            </ui:CardControl.Header>
+                            <ui:ToggleSwitch IsChecked="{Binding Settings.RemoteEnabled}" />
+                        </ui:CardControl>
+
+                        <StackPanel Visibility="{Binding Settings.RemoteEnabled, Converter={StaticResource BoolToVisibility}}">
+                            <Border Margin="0,0,0,8" Style="{StaticResource Card}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ui:SymbolIcon FontSize="20" Symbol="PhoneKey24" />
+                                        <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Style="{StaticResource RowTitle}" Text="Pair a phone" />
+                                    </StackPanel>
+                                    <TextBlock Margin="0,4,0,16" Style="{StaticResource Secondary}" Text="In the KeepGreen app on your phone, add this PC. Type in its address and the pairing code." />
+
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0" Margin="0,0,24,0">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="ADDRESS" />
+                                            <ItemsControl Margin="0,6,0,0" ItemsSource="{Binding Remote.Addresses}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <WrapPanel Margin="0,0,0,6">
+                                                            <TextBlock Margin="0,0,10,0" FontSize="20" FontWeight="SemiBold" Text="{Binding Address}" />
+                                                            <TextBlock VerticalAlignment="Center" Style="{StaticResource Secondary}" Text="{Binding Network}" />
+                                                        </WrapPanel>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <TextBlock
+                                                Margin="0,6,0,0"
+                                                Style="{StaticResource Secondary}"
+                                                Text="No network found. Connect this PC to Wi-Fi or a network cable."
+                                                Visibility="{Binding Remote.HasAddresses, Converter={StaticResource InverseBoolToVisibility}}" />
+                                        </StackPanel>
+
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Style="{StaticResource Secondary}" Text="PAIRING CODE" />
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock
+                                                    VerticalAlignment="Center"
+                                                    FontSize="40"
+                                                    FontWeight="SemiBold"
+                                                    Text="{Binding Remote.Code}"
+                                                    Typography.NumeralAlignment="Tabular" />
+                                                <ui:Button
+                                                    Margin="16,0,0,0"
+                                                    VerticalAlignment="Center"
+                                                    Click="NewPairingCode_Click"
+                                                    Content="New code"
+                                                    Icon="{ui:SymbolIcon ArrowClockwise24}" />
+                                            </StackPanel>
+                                            <TextBlock Style="{StaticResource Secondary}" Text="{Binding Remote.CodeHint}" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid Margin="0,20,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Ellipse
+                                            Grid.Column="0"
+                                            Width="8"
+                                            Height="8"
+                                            Margin="0,6,10,0"
+                                            VerticalAlignment="Top"
+                                            Fill="{Binding Remote.Tone, Converter={StaticResource StateToBrush}}" />
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding Remote.StatusText}" TextWrapping="Wrap" />
+                                            <TextBlock Margin="0,2,0,0" Style="{StaticResource Secondary}" Text="Windows may ask whether KeepGreen can use private networks. Choose Allow." />
+                                        </StackPanel>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <ui:CardControl Margin="0,0,0,8" Icon="{ui:SymbolIcon LinkDismiss24}">
+                                <ui:CardControl.Header>
+                                    <StackPanel>
+                                        <TextBlock Style="{StaticResource RowTitle}" Text="Unpair all phones" />
+                                        <TextBlock Style="{StaticResource Secondary}" Text="{Binding Remote.UnpairHint}" />
+                                    </StackPanel>
+                                </ui:CardControl.Header>
+                                <ui:Button Click="UnpairPhones_Click" Content="Unpair all" />
+                            </ui:CardControl>
+                        </StackPanel>
+
                         <Border Margin="0,12,0,12" Style="{StaticResource Card}">
                             <Grid>
                                 <Grid.ColumnDefinitions>

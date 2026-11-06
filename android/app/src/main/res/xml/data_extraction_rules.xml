@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    desktops.xml holds each paired computer's shared key. Keep it on this phone: never back it up
+    or copy it to a new device. Pair again on the new phone instead.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="desktops.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="desktops.xml" />
+    </device-transfer>
+</data-extraction-rules>

@@ -1,4 +1,3 @@
-using System.Reflection;
 using KeepGreen.Core;
 using KeepGreen.Services;
 
@@ -9,11 +8,12 @@ internal sealed class MainViewModel : ObservableObject
     private readonly string? _folderDisplay;
     private string _hotkeyStatus = "";
 
-    public MainViewModel(AppSettings settings, PresenceEngine engine, SettingsStore store)
+    public MainViewModel(AppSettings settings, PresenceEngine engine, SettingsStore store, RemoteViewModel remote)
     {
         Settings = settings;
         Engine = engine;
         Store = store;
+        Remote = remote;
     }
 
     public AppSettings Settings { get; }
@@ -21,6 +21,8 @@ internal sealed class MainViewModel : ObservableObject
     public PresenceEngine Engine { get; }
 
     public SettingsStore Store { get; }
+
+    public RemoteViewModel Remote { get; }
 
     /// <summary>The settings folder as people write it, e.g. %APPDATA%\KeepGreen.</summary>
     public string FolderDisplay
@@ -38,8 +40,7 @@ internal sealed class MainViewModel : ObservableObject
 
     public IReadOnlyList<ThemePreference> Themes { get; } = Enum.GetValues<ThemePreference>();
 
-    public string Version { get; } = "Version " +
-        (Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0");
+    public string Version { get; } = "Version " + App.InformationalVersion;
 
     public string HotkeyStatus
     {

@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using KeepGreen.Core.Remote;
 
 namespace KeepGreen.Core;
 
@@ -88,6 +89,9 @@ public sealed class AppSettings : ObservableObject
     // Teams switches to Away after 5 minutes idle; with ±20% variation this still nudges before 4m48s.
     public const int MaxIntervalSeconds = 240;
 
+    public const int MinRemotePort = 1024;
+    public const int MaxRemotePort = 65535;
+
     public static readonly DayOfWeek[] WeekOrder =
     [
         DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
@@ -114,6 +118,9 @@ public sealed class AppSettings : ObservableObject
     private ThemePreference _theme = ThemePreference.System;
     private bool _hotkeyEnabled = true;
     private bool _trayHintShown;
+    private bool _remoteEnabled;
+    private int _remotePort = RemoteServer.DefaultPort;
+    private string _remoteKey = "";
 
     /// <summary>Raised after any setting changes, including days and days off.</summary>
     public event EventHandler? Changed;
@@ -163,6 +170,14 @@ public sealed class AppSettings : ObservableObject
 
     public bool TrayHintShown { get => _trayHintShown; set => SetProperty(ref _trayHintShown, value); }
 
+    /// <summary>Lets the KeepGreen phone apps watch and control this PC over the local network.</summary>
+    public bool RemoteEnabled { get => _remoteEnabled; set => SetProperty(ref _remoteEnabled, value); }
+
+    public int RemotePort { get => _remotePort; set => SetProperty(ref _remotePort, value); }
+
+    /// <summary>The key shared with paired phones: 32 lowercase hex characters, or empty until the remote is first turned on.</summary>
+    public string RemoteKey { get => _remoteKey; set => SetProperty(ref _remoteKey, value); }
+
     public DaySchedule? GetDay(DayOfWeek day) => Week.FirstOrDefault(d => d.Day == day);
 
     /// <summary>The watched process names, without ".exe" and without duplicates.</summary>
@@ -190,6 +205,9 @@ public sealed class AppSettings : ObservableObject
         LunchStart = RoundToQuarter(LunchStart);
         LunchEnd = RoundToQuarter(LunchEnd);
         WatchedApps ??= "";
+        RemotePort = Math.Clamp(RemotePort, MinRemotePort, MaxRemotePort);
+        if (!RemoteSignature.IsValidKey(RemoteKey))
+            RemoteKey = "";
 
         var loaded = Week ?? [];
         Week = new ObservableCollection<DaySchedule>(WeekOrder.Select(day =>

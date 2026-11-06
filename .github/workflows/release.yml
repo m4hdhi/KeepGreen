@@ -1,6 +1,6 @@
 name: Release
 
-# Publishing a GitHub release builds both downloads and attaches them to it.
+# Publishing a GitHub release builds every download and attaches it to the release.
 on:
   release:
     types: [published]
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,3 +35,52 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload "${{ github.event.release.tag_name }}" KeepGreen-win-x64.exe KeepGreen-win-x64-standalone.exe --clobber
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        working-directory: apple
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          version='${{ github.event.release.tag_name }}'
+          xcodebuild -quiet -project KeepGreen.xcodeproj -scheme KeepGreenMac -configuration Release \
+            -destination 'generic/platform=macOS' -derivedDataPath build \
+            MARKETING_VERSION="${version#v}" CODE_SIGNING_ALLOWED=NO build
+          # Ad-hoc sign so Apple silicon Macs will launch it; it is not notarized.
+          codesign --force --deep --sign - build/Build/Products/Release/KeepGreen.app
+          ditto -c -k --keepParent build/Build/Products/Release/KeepGreen.app ../KeepGreen-macos.zip
+
+      - name: Upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" KeepGreen-macos.zip --clobber
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.11.1
+
+      # A debug-signed APK installs by sideloading. Play Store builds need a release key, kept out of this repo.
+      - name: Build
+        working-directory: android
+        run: |
+          gradle testDebugUnitTest assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../KeepGreen-android.apk
+
+      - name: Upload
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" KeepGreen-android.apk --clobber

@@ -35,6 +35,7 @@ internal static class StatusPalette
     };
 }
 
+/// <summary>Paints a <see cref="PresenceState"/> or a <see cref="StatusTone"/> in the status colours.</summary>
 public sealed class StateToBrushConverter : IValueConverter
 {
     private static readonly Dictionary<StatusTone, SolidColorBrush> Palette =
@@ -45,8 +46,12 @@ public sealed class StateToBrushConverter : IValueConverter
             return brush;
         });
 
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
-        Palette[value is PresenceState state ? StatusPalette.ToneOf(state) : StatusTone.Gray];
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => Palette[value switch
+    {
+        PresenceState state => StatusPalette.ToneOf(state),
+        StatusTone tone => tone,
+        _ => StatusTone.Gray,
+    }];
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();

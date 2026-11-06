@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    KeepGreen only talks to KeepGreen on the user's own computers, on the same local network, and
+    the desktop serves plain HTTP there (docs/remote-api.md). Android can't scope cleartext to
+    private IP ranges, so it is allowed app-wide; the app never contacts anything else.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

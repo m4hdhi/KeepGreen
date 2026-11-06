@@ -1,9 +1,11 @@
 using System.ComponentModel;
 using System.IO;
+using System.Reflection;
 using System.Security;
 using System.Windows;
 using System.Windows.Threading;
 using KeepGreen.Core;
+using KeepGreen.Core.Remote;
 using KeepGreen.Services;
 using Microsoft.Win32;
 using Wpf.Ui.Appearance;
@@ -17,12 +19,17 @@ public partial class App : Application
     private SettingsStore? _store;
     private AppSettings? _settings;
     private PresenceEngine? _engine;
+    private RemoteServer? _remote;
     private MainViewModel? _viewModel;
     private MainWindow? _window;
     private TrayIconService? _tray;
     private HotkeyService? _hotkey;
     private ApplicationTheme? _appliedTheme;
     private bool _quitting;
+
+    /// <summary>The version people see, e.g. "1.0.0".</summary>
+    internal static string InformationalVersion { get; } =
+        Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "1.0.0";
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -52,7 +59,11 @@ public partial class App : Application
         _settings.TrackChanges();
 
         _engine = new PresenceEngine(_settings, _store);
-        _viewModel = new MainViewModel(_settings, _engine, _store);
+        var pairing = new PairingCodes();
+        _remote = new RemoteServer(new RemoteHandler(Dispatcher, _settings, _engine), pairing);
+        _remote.StateChanged += (_, _) => Dispatcher.InvokeAsync(() => _viewModel?.Remote.Refresh());
+        _remote.Paired += OnPhonePaired;
+        _viewModel = new MainViewModel(_settings, _engine, _store, new RemoteViewModel(_settings, _remote, pairing));
         _window = new MainWindow(_viewModel);
         _window.Closing += OnWindowClosing;
         ApplyTheme();
@@ -75,6 +86,7 @@ public partial class App : Application
         _settings.PropertyChanged += OnSettingChanged;
         _engine.StateChanged += OnPresenceChanged;
         _engine.Start();
+        UpdateRemote();
 
         var launchedAtSignIn = e.Args.Any(arg => string.Equals(arg, "--tray", StringComparison.OrdinalIgnoreCase));
         if (!(launchedAtSignIn && _settings.StartInTray))
@@ -84,6 +96,8 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
+        _remote?.Dispose();
+        _viewModel?.Remote.Dispose();
         _engine?.Dispose();
         _hotkey?.Dispose();
         _tray?.Dispose();
@@ -145,6 +159,38 @@ public partial class App : Application
             : "Ctrl + Alt + G is already used by another app.";
     }
 
+    /// <summary>Starts, stops or restarts the phone remote to match the settings.</summary>
+    private void UpdateRemote()
+    {
+        if (_remote is null || _settings is null || _viewModel is null)
+            return;
+
+        if (_settings.RemoteEnabled)
+        {
+            // The key is made the first time the remote is turned on, and kept until "Unpair all phones".
+            if (!RemoteSignature.IsValidKey(_settings.RemoteKey))
+                _settings.RemoteKey = RemoteSignature.NewKey();
+            _remote.Key = _settings.RemoteKey;
+
+            if (_remote.State != RemoteServerState.Listening || _remote.Port != _settings.RemotePort)
+                _remote.Start(_settings.RemotePort);
+        }
+        else
+        {
+            _remote.Stop();
+        }
+
+        _viewModel.Remote.Refresh();
+    }
+
+    private void OnPhonePaired(object? sender, string device) =>
+        Dispatcher.InvokeAsync(() =>
+        {
+            // Shown even with notifications off: a new phone that can control this PC is worth knowing about.
+            _tray?.ShowNotification("Phone paired", $"{device} can now control KeepGreen.");
+            _viewModel?.Remote.Refresh();
+        });
+
     private void OnSettingChanged(object? sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)
@@ -154,6 +200,13 @@ public partial class App : Application
                 break;
             case nameof(AppSettings.HotkeyEnabled):
                 UpdateHotkey();
+                break;
+            case nameof(AppSettings.RemoteEnabled) or nameof(AppSettings.RemotePort):
+                UpdateRemote();
+                break;
+            case nameof(AppSettings.RemoteKey) when _remote is not null:
+                // "Unpair all phones": phones holding the old key are refused from now on.
+                _remote.Key = _settings!.RemoteKey;
                 break;
             case nameof(AppSettings.StartWithWindows):
                 try

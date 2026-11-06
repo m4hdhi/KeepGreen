@@ -1,0 +1,69 @@
+# XcodeGen spec. Generate the Xcode project with:  brew install xcodegen && xcodegen generate
+name: KeepGreen
+options:
+  bundleIdPrefix: io.github.m4hdhi
+  deploymentTarget:
+    macOS: "13.0"
+    iOS: "16.0"
+  createIntermediateGroups: true
+
+packages:
+  KeepGreenKit:
+    path: KeepGreenKit
+
+settings:
+  base:
+    MARKETING_VERSION: "2.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+
+targets:
+  KeepGreenMac:
+    type: application
+    platform: macOS
+    sources: [KeepGreenMac]
+    dependencies:
+      - package: KeepGreenKit
+    scheme: {}
+    settings:
+      base:
+        PRODUCT_NAME: KeepGreen
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.m4hdhi.keepgreen.mac
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_HARDENED_RUNTIME: NO
+    info:
+      path: KeepGreenMac/Info.plist
+      properties:
+        CFBundleDisplayName: KeepGreen
+        LSUIElement: true
+        LSApplicationCategoryType: public.app-category.productivity
+        NSHumanReadableCopyright: "Copyright © 2026 Mahdhi Muzammil. MIT license."
+        NSLocalNetworkUsageDescription: KeepGreen listens on your local network so your phone can show and control its status.
+
+  KeepGreenRemote:
+    type: application
+    platform: iOS
+    sources: [KeepGreenRemote]
+    dependencies:
+      - package: KeepGreenKit
+    scheme: {}
+    settings:
+      base:
+        PRODUCT_NAME: KeepGreen
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.m4hdhi.keepgreen.remote
+        # iPhone only: a portrait-only iPad app is rejected at upload.
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    info:
+      path: KeepGreenRemote/Info.plist
+      properties:
+        CFBundleDisplayName: KeepGreen
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        NSLocalNetworkUsageDescription: KeepGreen connects to your computer on this network to show and control its status.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        CFBundleURLTypes:
+          - CFBundleURLName: io.github.m4hdhi.keepgreen
+            CFBundleURLSchemes: [keepgreen]

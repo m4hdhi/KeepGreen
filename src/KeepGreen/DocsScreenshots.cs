@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using KeepGreen.Core;
+using KeepGreen.Core.Remote;
 using KeepGreen.Services;
 using Wpf.Ui.Appearance;
 
@@ -39,7 +40,9 @@ internal static class DocsScreenshots
         ApplicationAccentColorManager.Apply(StatusPalette.Green, ApplicationTheme.Dark);
 
         var engine = new PresenceEngine(settings, store);
-        var viewModel = new MainViewModel(settings, engine, store)
+        var pairing = new PairingCodes();
+        using var remote = new RemoteServer(new RemoteHandler(app.Dispatcher, settings, engine), pairing);
+        var viewModel = new MainViewModel(settings, engine, store, new RemoteViewModel(settings, remote, pairing))
         {
             HotkeyStatus = "Ready. Press Ctrl + Alt + G anywhere to turn KeepGreen on or off.",
             FolderDisplay = @"%APPDATA%\KeepGreen",

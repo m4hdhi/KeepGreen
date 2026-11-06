@@ -54,7 +54,14 @@ public partial class MainWindow : FluentWindow
 
     private async void SelfTest_Click(object sender, RoutedEventArgs e)
     {
+        var button = (FrameworkElement)sender;
+        button.IsEnabled = false;
+        TestResultBar.Severity = InfoBarSeverity.Informational;
+        TestResultBar.Message = "Testing… keep your hands off the mouse and keyboard for 3 seconds.";
+        TestResultBar.IsOpen = true;
+
         var (ok, message) = await _viewModel.Engine.RunSelfTestAsync();
+        button.IsEnabled = true;
         TestResultBar.Severity = ok ? InfoBarSeverity.Success : InfoBarSeverity.Error;
         TestResultBar.Message = message;
         TestResultBar.IsOpen = true;
@@ -102,6 +109,10 @@ public partial class MainWindow : FluentWindow
         if (((FrameworkElement)sender).Tag is DateOnly day)
             _viewModel.Settings.DaysOff.Remove(day);
     }
+
+    private void NewPairingCode_Click(object sender, RoutedEventArgs e) => _viewModel.Remote.NewCode();
+
+    private void UnpairPhones_Click(object sender, RoutedEventArgs e) => _viewModel.Remote.UnpairAll();
 
     private void OpenDataFolder_Click(object sender, RoutedEventArgs e)
     {

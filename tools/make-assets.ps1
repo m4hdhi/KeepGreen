@@ -7,7 +7,8 @@
 #>
 param(
     [string]$AssetsDir = (Join-Path $PSScriptRoot '..\src\KeepGreen\Assets'),
-    [string]$DocsDir = (Join-Path $PSScriptRoot '..\docs')
+    [string]$DocsDir = (Join-Path $PSScriptRoot '..\docs'),
+    [string]$AppleDir = (Join-Path $PSScriptRoot '..\apple')
 )
 
 $ErrorActionPreference = 'Stop'
@@ -26,14 +27,14 @@ function New-RoundedRectPath([float]$x, [float]$y, [float]$w, [float]$h, [float]
     return $path
 }
 
-# The mark: a glowing "available" dot on a dark rounded tile.
-function Draw-Mark([System.Drawing.Graphics]$g, [float]$x, [float]$y, [float]$s) {
+# The mark: a glowing "available" dot on a dark rounded tile (or a full square for iOS, which rounds it itself).
+function Draw-Mark([System.Drawing.Graphics]$g, [float]$x, [float]$y, [float]$s, [switch]$Square) {
     $tile = New-RoundedRectPath $x $y ($s - 1) ($s - 1) ($s * 0.23)
     $bg = New-Object System.Drawing.Drawing2D.LinearGradientBrush(
         (New-Object System.Drawing.PointF($x, $y)),
         (New-Object System.Drawing.PointF(($x + $s), ($y + $s))),
         (Get-Color 255 18 46 35), (Get-Color 255 5 16 12))
-    $g.FillPath($bg, $tile)
+    if ($Square) { $g.FillRectangle($bg, $x, $y, $s, $s) } else { $g.FillPath($bg, $tile) }
 
     $cx = $x + $s / 2
     $cy = $y + $s / 2
@@ -144,4 +145,42 @@ $g.Dispose()
 $bitmap.Save((Join-Path $DocsDir 'banner.png'), [System.Drawing.Imaging.ImageFormat]::Png)
 $bitmap.Dispose()
 
-Write-Host "Wrote logo.png, KeepGreen.ico and docs/banner.png"
+# Apple app icons: macOS wants every size with the tile inset; iOS wants one opaque 1024 px square.
+function Save-Mark([string]$path, [int]$size, [double]$inset, [bool]$opaque) {
+    $bitmap, $g = New-Canvas $size $size
+    $offset = [float]($size * $inset)
+    Draw-Mark $g $offset $offset ($size - 2 * $offset) -Square:$opaque
+    $g.Dispose()
+    if ($opaque) {
+        $flat = $bitmap.Clone((New-Object System.Drawing.Rectangle(0, 0, $size, $size)), [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+        $flat.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
+        $flat.Dispose()
+    } else {
+        $bitmap.Save($path, [System.Drawing.Imaging.ImageFormat]::Png)
+    }
+    $bitmap.Dispose()
+}
+
+$catalogInfo = '"info" : { "author" : "xcode", "version" : 1 }'
+$macSet = Join-Path $AppleDir 'KeepGreenMac\Assets.xcassets\AppIcon.appiconset'
+$iosSet = Join-Path $AppleDir 'KeepGreenRemote\Assets.xcassets\AppIcon.appiconset'
+New-Item -ItemType Directory -Force -Path $macSet, $iosSet | Out-Null
+foreach ($catalog in (Split-Path $macSet), (Split-Path $iosSet)) {
+    Set-Content -Encoding ASCII -Path (Join-Path $catalog 'Contents.json') -Value "{ $catalogInfo }"
+}
+
+$macImages = @()
+foreach ($points in 16, 32, 128, 256, 512) {
+    foreach ($scale in 1, 2) {
+        $suffix = if ($scale -eq 2) { '@2x' } else { '' }
+        $name = "icon_${points}x${points}$suffix.png"
+        Save-Mark (Join-Path $macSet $name) ($points * $scale) 0.1 $false
+        $macImages += "    { `"filename`" : `"$name`", `"idiom`" : `"mac`", `"scale`" : `"${scale}x`", `"size`" : `"${points}x${points}`" }"
+    }
+}
+Set-Content -Encoding ASCII -Path (Join-Path $macSet 'Contents.json') -Value ("{`n  `"images`" : [`n" + ($macImages -join ",`n") + "`n  ],`n  $catalogInfo`n}")
+
+Save-Mark (Join-Path $iosSet 'AppIcon-1024.png') 1024 0 $true
+Set-Content -Encoding ASCII -Path (Join-Path $iosSet 'Contents.json') -Value ("{`n  `"images`" : [`n    { `"filename`" : `"AppIcon-1024.png`", `"idiom`" : `"universal`", `"platform`" : `"ios`", `"size`" : `"1024x1024`" }`n  ],`n  $catalogInfo`n}")
+
+Write-Host "Wrote logo.png, KeepGreen.ico, docs/banner.png and the Apple app icons"

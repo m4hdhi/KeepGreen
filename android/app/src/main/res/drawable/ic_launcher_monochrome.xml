@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Themed-icon layer (Android 13+): the dot inside a ring. Only the alpha is used. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M30,54a24,24 0,1 1,48 0a24,24 0,1 1,-48 0Z"
+        android:strokeWidth="4"
+        android:strokeColor="#FFFFFFFF" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M40,54a14,14 0,1 1,28 0a14,14 0,1 1,-28 0Z" />
+</vector>

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.0
+
+KeepGreen goes multi-platform.
+
+- **macOS app:** a native SwiftUI menu-bar app with the same schedule, boosts, smart pauses, stats and self-test as Windows.
+- **Phone remote:** new iPhone and Android apps show your computer's live status and let you flip the switch or start and cancel boosts. Pair once with a 6-digit code (or a QR code on the Mac). Off by default, local Wi-Fi only, every command signed. See [docs/remote-api.md](docs/remote-api.md).
+- **Android keep-awake:** keep the phone's screen on for a while or until you turn it off, from the app or a Quick Settings tile.
+- **Windows:** a new *Phone remote* section in Settings. The self-test now waits until you're hands-off, so it can't pass just because you clicked the button.
+- Shared Swift core (`KeepGreenKit`) with tests that mirror the C# ones, and CI that builds and tests Windows, macOS, iOS and Android on every change.
+
 ## 1.0.0 (2026-11-05)
 
 First release.

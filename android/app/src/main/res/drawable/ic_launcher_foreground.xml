@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The glowing green dot: a soft light-green halo, the #22C55E dot, and a small highlight.
+     Everything stays inside the 66dp safe zone (radius 33 around the centre). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Halo -->
+    <path android:pathData="M22,54a32,32 0,1 1,64 0a32,32 0,1 1,-64 0Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="32"
+                android:type="radial">
+                <item
+                    android:color="#B386EFAC"
+                    android:offset="0" />
+                <item
+                    android:color="#594ADE80"
+                    android:offset="0.55" />
+                <item
+                    android:color="#0022C55E"
+                    android:offset="1" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <!-- Dot -->
+    <path
+        android:fillColor="#22C55E"
+        android:pathData="M39,54a15,15 0,1 1,30 0a15,15 0,1 1,-30 0Z" />
+    <!-- Highlight -->
+    <path
+        android:fillColor="#66DCFCE7"
+        android:pathData="M44,49a5,5 0,1 1,10 0a5,5 0,1 1,-10 0Z" />
+</vector>
